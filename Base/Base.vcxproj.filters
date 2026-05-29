@@ -1,102 +1,93 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="源文件">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="头文件">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
-    <Filter Include="资源文件">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="头文件\Base">
-      <UniqueIdentifier>{e70c42e2-7a64-402e-98a0-38fed91c3e53}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\Base">
+    <Filter Include="src">
       <UniqueIdentifier>{296a0d66-dd15-49b3-abfd-1b48f2bfb43e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="头文件\Base\Windows">
-      <UniqueIdentifier>{9e51fe52-f0e1-4e42-9ed8-fa871e037915}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\Base\Windows">
+    <Filter Include="src\Windows">
       <UniqueIdentifier>{dde89f0a-566a-4a7a-957f-f494744e5151}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{e70c42e2-7a64-402e-98a0-38fed91c3e53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\Windows">
+      <UniqueIdentifier>{9e51fe52-f0e1-4e42-9ed8-fa871e037915}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Base\Common.h">
-      <Filter>头文件\Base</Filter>
+      <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\Base\Exception.h">
-      <Filter>头文件\Base</Filter>
+      <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\Base\Log.h">
-      <Filter>头文件\Base</Filter>
+      <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\Base\ScopeGuard.h">
-      <Filter>头文件\Base</Filter>
+      <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\Base\Types.h">
-      <Filter>头文件\Base</Filter>
+      <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\Base\Windows\Apis.h">
-      <Filter>头文件\Base\Windows</Filter>
+      <Filter>include\Windows</Filter>
     </ClInclude>
     <ClInclude Include="include\Base\Windows\Common.h">
-      <Filter>头文件\Base\Windows</Filter>
+      <Filter>include\Windows</Filter>
     </ClInclude>
     <ClInclude Include="include\Base\Time.h">
-      <Filter>头文件\Base</Filter>
+      <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\Base\Logger.h">
-      <Filter>头文件\Base</Filter>
+      <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\Base\Traits.h">
-      <Filter>头文件\Base</Filter>
+      <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\Base\Streamable.h">
-      <Filter>头文件\Base</Filter>
+      <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\Base\Throwable.h">
-      <Filter>头文件\Base</Filter>
+      <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\Base\Catcher.h">
-      <Filter>头文件\Base</Filter>
+      <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\Base\Error.h">
-      <Filter>头文件\Base</Filter>
+      <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\Base\Singleton.h">
-      <Filter>头文件\Base</Filter>
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Base\Exception.cpp">
-      <Filter>源文件\Base</Filter>
+      <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\Base\Log.cpp">
-      <Filter>源文件\Base</Filter>
+      <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\Base\Windows\Apis.cpp">
-      <Filter>源文件\Base\Windows</Filter>
+      <Filter>src\Windows</Filter>
     </ClCompile>
     <ClCompile Include="src\Base\Time.cpp">
-      <Filter>源文件\Base</Filter>
+      <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\Base\Logger.cpp">
-      <Filter>源文件\Base</Filter>
+      <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\Base\Throwable.cpp">
-      <Filter>源文件\Base</Filter>
+      <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\Base\Catcher.cpp">
-      <Filter>源文件\Base</Filter>
+      <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\Base\Error.cpp">
-      <Filter>源文件\Base</Filter>
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

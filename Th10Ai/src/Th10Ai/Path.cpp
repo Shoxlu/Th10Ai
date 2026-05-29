@@ -1,7 +1,10 @@
 #include "Th10Ai/Path.h"
 
+
 namespace th
 {
+	//Useful dirs when just the bot just did the first dir
+	//idk how much doing down then up is bad
 	const DIR Path::FIND_DIRS[to_underlying(DIR::MAX_COUNT)][5] =
 	{
 		// DIR::HOLD
@@ -60,20 +63,139 @@ namespace th
 
 		return dfs(action);
 	}
+	Result Path::findminmax(DIR dir)
+	{
+		m_dir = dir;
+		m_slowFirst = (!m_itemTarget.has_value() && m_underEnemy);
+
+		Action action = {};
+		action.fromPos = m_status.getPlayer().pos;
+		action.fromDir = m_dir;
+		action.frame = 1;
+		action.score = 0;
+		Result res = minmax(action);
+		m_bestScore = res.score;
+		return res;
+	}
+	bool Path::PlayerDies(const Action& action, Result& result, Player& player)
+	{
+		player.setPosition(action.fromPos);
+		player.move(action.fromDir, m_slowFirst);
+		result.slow = m_slowFirst;
+		RegionCollideResult rcr = {};
+		if (!Scene::IsInPlayerRegion(player.pos)
+			|| (rcr = m_scenes[action.frame - 1].collideAll(player)).collided)
+		{
+			player.setPosition(action.fromPos);
+			player.move(action.fromDir, m_slowFirst);
+			//result.slow = !m_slowFirst;
+			if (!Scene::IsInPlayerRegion(player.pos)
+				|| (rcr = m_scenes[action.frame - 1].collideAll(player)).collided)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	int_t Path::Score(Result& result, Player& player)
+	{
+		result.valid = true;
+
+		if (m_anyItems && !m_enemyTarget.has_value() && (!m_itemTarget.has_value() || (player.pos - m_itemTarget.value().pos).length() > player.pos.y - 120))
+		{
+			result.score += CalcNearScore(player.pos, Vector2(player.pos.x, 120)) * _F(100.0);
+		}
+		else if (m_itemTarget.has_value())
+		{
+			result.score += CalcNearScore(player.pos, m_itemTarget.value().pos) * _F(100.0);
+		}
+		else if (m_enemyTarget.has_value())
+		{
+			//result.score += CalcShootScore(player.pos, m_enemyTarget.value().pos) * _F(100.0);
+			//result.score += CalcNearScore(player.pos, Vector2(m_enemyTarget.value().pos.x, RESET_POS.y)) * _F(100.0);
+			result.score += CalcRelaxedNearScore(player.pos, Vector2(m_enemyTarget.value().pos.x, RESET_POS.y), _F(16.0)) * _F(100.0);
+		}
+		else
+		{
+			//result.score += CalcNearScore(player.pos, RESET_POS) * _F(100.0);
+			result.score += CalcRelaxedNearScore(player.pos, RESET_POS, _F(64.0)) * _F(100.0);
+		}
+		return result.score;
+	}
+
+	//actually it's only a max, since min would always return the same thing...
+	Result Path::minmax(const Action& action)
+	{
+
+
+		/*
+		Si l'action tue le joueur: renvoyer un résultat invalide
+		Si la depth/node_limit est dépassé, renvoyer le résultat munide son score
+		Sinon: descendre en profondeur en testant chaque move et prendre le max de ceux calculés
+		
+		*/
+		Result result = {};
+		++m_count;
+		Player player = m_status.getPlayer();
+		if (PlayerDies(action, result, player))
+		{
+			result.score = -100;
+			return result;
+		}
+		else if (m_count > FIND_LIMIT || action.frame > FIND_DEPTH)
+		{
+			Score(result, player);
+			result.valid = true;
+			return result;
+		}
+		else
+		{
+			Result best_res = { .score = std::numeric_limits<int_t>::lowest()};
+			int_t nextValidCount = FIND_DIR_COUNTS[to_underlying(m_dir)];
+			for (int_t i = 0; i < FIND_DIR_COUNTS[to_underlying(m_dir)]; ++i)
+			{
+				DIR dir = FIND_DIRS[to_underlying(m_dir)][i];
+
+				Action nextAct = {};
+				nextAct.fromPos = player.pos;
+				nextAct.fromDir = dir;
+				nextAct.frame = action.frame + 1;
+
+				Result nextRes = minmax(nextAct);
+
+				if (!nextRes.valid)
+					nextValidCount -= 1;
+
+				if (best_res.score < nextRes.score)
+				{
+					best_res = nextRes;
+				}
+			}
+			if (nextValidCount != 0)
+				result.valid = true;
+			return best_res;
+		}
+
+	}
+
 
 	Result Path::dfs(const Action& action)
 	{
 		Result result = {};
 
-		// 超过搜索节点限制
+		// 超过搜索节点限制(Search Node Limit Exceeded)
 		++m_count;
 		if (m_count > FIND_LIMIT)
 			return result;
 
 		if (action.frame > FIND_DEPTH)
+		{
+			result.valid = true;
 			return result;
+		}
 
-		// 前进到下一个坐标
+		// 前进到下一个坐标(Advance to the next coordinate.)
 		Player player = m_status.getPlayer();
 		player.setPosition(action.fromPos);
 		player.move(action.fromDir, m_slowFirst);
@@ -96,7 +218,7 @@ namespace th
 
 		if (m_anyItems && !m_enemyTarget.has_value() && (!m_itemTarget.has_value() || (player.pos - m_itemTarget.value().pos).length() > player.pos.y - 120))
 		{
-			result.score += CalcNearScore(player.pos, Vector2(player.pos.x, 120)) * _F(100.0);
+			result.score += CalcNearScore(player.pos, Vector2(player.pos.x, 120)) * _F(110.0);
 		}
 		else if (m_itemTarget.has_value())
 		{
@@ -140,7 +262,7 @@ namespace th
 			if (!nextRes.valid)
 				nextValidCount -= 1;
 		}
-		// 没气了，当前节点也无效
+		// 没气了，当前节点也无效 (Not valid, why ?)
 		if (nextValidCount == 0)
 			result.valid = false;
 

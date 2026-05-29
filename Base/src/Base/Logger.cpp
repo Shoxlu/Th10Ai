@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Base/Logger.h"
 
 #include <boost/log/utility/setup/file.hpp>

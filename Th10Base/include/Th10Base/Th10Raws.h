@@ -6,8 +6,8 @@ namespace th
 {
 	constexpr uint_t ITEM_MAX_COUNT = 2198;
 
-	//constexpr uint_t BULLET_MAX_COUNT = 2001;
-	constexpr uint_t BULLET_MAX_COUNT = 4001; // Ultra only
+	constexpr uint_t BULLET_MAX_COUNT = 2001;
+	constexpr uint_t BULLET_MAX_COUNT_ULTRA = 4001; // Ultra only
 
 #pragma pack(1)
 

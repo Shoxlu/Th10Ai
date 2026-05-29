@@ -20,15 +20,15 @@ namespace th
 	struct Result
 	{
 		bool valid;
-		bool slow;		// 实际是否慢速
+		bool slow;		// 实际是否慢速(is_slow)
 		float_t score;
 	};
 
 	class Path
 	{
 	public:
-		static constexpr int_t FIND_LIMIT = 8192;
-		static constexpr int_t FIND_DEPTH = 40;
+		static constexpr int_t FIND_LIMIT = 100000000;
+		static constexpr int_t FIND_DEPTH = 5;
 
 		Path(Status& status, Scene* scenes,
 			const std::optional<Item>& itemTarget,
@@ -36,6 +36,10 @@ namespace th
 			bool underEnemy, bool anyItems);
 
 		Result find(DIR dir);
+		Result findminmax(DIR dir);
+		bool PlayerDies(const Action& action, Result& result, Player& player);
+		int_t Score(Result& result, Player& player);
+		Result minmax(const Action& action);
 		Result dfs(const Action& action);
 
 	//private:

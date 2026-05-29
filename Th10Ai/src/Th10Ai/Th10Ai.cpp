@@ -34,17 +34,20 @@ namespace th
 			throw Exception("Th10SharedData名称已被使用。");
 
 		fs::path dir = Apis::GetModuleDir();
+		printf("dir: %ws\n", dir.c_str());
 		fs::path logPath = dir / L"Th10Ai.log";
-		g_logger.addFileLog(logPath);
-		g_logger.addCommonAttributes();
-
+		/*g_logger.addFileLog(logPath);
+		g_logger.addCommonAttributes();*/
+		printf("dir log: %ws\n", logPath);
 		fs::path confPath = dir / L"Th10Ai.conf";
+		printf("dir conf: %ws\n", confPath);
 		std::ifstream ifs(confPath.c_str());
 		po::options_description desc("Config");
 		desc.add_options()
 			("exe-path", po::value<std::string>(), "exe path")
 			("dll-name", po::value<std::string>(), "dll name")
 			("dump", po::value<bool>(), "dump");
+
 		po::variables_map vm;
 		po::store(po::parse_config_file(ifs, desc), vm);
 		po::notify(vm);
@@ -52,6 +55,7 @@ namespace th
 		fs::path exePath = Apis::AnsiToWide(vm["exe-path"].as<std::string>());
 		std::wstring dllName = Apis::AnsiToWide(vm["dll-name"].as<std::string>());
 		fs::path exeDir = exePath.parent_path();
+		printf("exepath:%ws dllName:%ws exeDir:%ws\n", exePath.c_str(), dllName.c_str(), exeDir.c_str());
 
 		{
 			STARTUPINFOW si = {};
@@ -272,6 +276,7 @@ namespace th
 				Input& input = m_sharedData->getWritableInput();
 				input.bomb();
 				++m_bombCount;
+				printf("Got hit\n");
 				//std::cout << statusFrame - handleFrame << "/"
 				//	<< handleFrame << "/"
 				//	<< inputFrame - handleFrame << "/"
@@ -326,7 +331,7 @@ namespace th
 		for (DIR dir : DIRS)
 		{
 			Path path(m_status, m_scenes, itemTarget, enemyTarget, underEnemy, !m_status.getItems().empty());
-			Result result = path.find(dir);
+			Result result = path.findminmax(dir);
 
 			if (result.valid && path.m_bestScore > bestScore)
 			{
@@ -334,10 +339,13 @@ namespace th
 				bestDir = path.m_dir;
 				bestSlow = result.slow;
 			}
+			printf("Move: %d, Slow: %d, Score : %f, Validity : %u\n", path.m_dir, result.slow, result.score, result.valid);
 		}
+		
 
 		if (bestDir.has_value() && bestSlow.has_value())
 		{
+			printf("Best Move: %d, Slow: %d, Score : %f\n", bestDir.value(), bestSlow.value(), bestScore);
 			Input& input = m_sharedData->getWritableInput();
 			input.move(bestDir.value());
 			if (bestSlow.value())
@@ -347,7 +355,7 @@ namespace th
 		}
 		else
 		{
-			std::cout << "无路可走。" << std::endl;
+			std::cout << "No valid move" << std::endl;
 		}
 
 		return true;

@@ -103,7 +103,7 @@ namespace base
 				throw Error(GetLastError());
 			if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
 				throw Error(ERROR_INSUFFICIENT_BUFFER);
-
+			fs::path pbuffer = fs::path(buffer);
 			return fs::path(buffer);
 		}
 

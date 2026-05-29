@@ -21,8 +21,10 @@ int main(int argc, char* argv[])
 	}
 	catch (...)
 	{
+		printf("ça a pas marché\n");
 		BASE_LOG(error) << th::Catcher() << std::endl;
 	}
 	system("pause");
+	
 	return 0;
 }

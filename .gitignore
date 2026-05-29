@@ -38,3 +38,4 @@ Release/
 *.aps
 
 CMakeLists.txt
+/Game
