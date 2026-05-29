@@ -104,7 +104,7 @@ namespace th
 
 		if (m_anyItems && !m_enemyTarget.has_value() && (!m_itemTarget.has_value() || (player.pos - m_itemTarget.value().pos).length() > player.pos.y - 120))
 		{
-			result.score += CalcNearScore(player.pos, Vector2(player.pos.x, 120)) * _F(100.0);
+			result.score += CalcNearScore(player.pos, Vector2(player.pos.x, 110)) * _F(100.0);
 		}
 		else if (m_itemTarget.has_value())
 		{
@@ -218,7 +218,7 @@ namespace th
 
 		if (m_anyItems && !m_enemyTarget.has_value() && (!m_itemTarget.has_value() || (player.pos - m_itemTarget.value().pos).length() > player.pos.y - 120))
 		{
-			result.score += CalcNearScore(player.pos, Vector2(player.pos.x, 120)) * _F(110.0);
+			result.score += CalcNearScore(player.pos, Vector2(player.pos.x, 115)) * _F(100.0);
 		}
 		else if (m_itemTarget.has_value())
 		{
