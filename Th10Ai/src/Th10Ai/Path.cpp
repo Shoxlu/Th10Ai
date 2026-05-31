@@ -4,7 +4,7 @@
 namespace th
 {
 	//Useful dirs when just the bot just did the first dir
-	//idk how much doing down then up is bad
+	//idk how much doing "down" then "up" is bad, this feels like pre-computed greedy algorithm
 	const DIR Path::FIND_DIRS[to_underlying(DIR::MAX_COUNT)][5] =
 	{
 		// DIR::HOLD
@@ -35,11 +35,13 @@ namespace th
 
 	Path::Path(Status& status, Scene* scenes,
 		const std::optional<Item>& itemTarget,
+		const std::optional<Bullet>& bulletTarget,
 		const std::optional<Enemy>& enemyTarget,
 		bool underEnemy, bool anyItems) :
 		m_status(status),
 		m_scenes(scenes),
 		m_itemTarget(itemTarget),
+		m_bulletTarget(bulletTarget),
 		m_enemyTarget(enemyTarget),
 		m_underEnemy(underEnemy),
 		m_dir(DIR::HOLD),
@@ -75,30 +77,43 @@ namespace th
 		action.score = 0;
 		Result res = minmax(action);
 		m_bestScore = res.score;
+		m_slowFirst = res.slow;
 		return res;
 	}
 	bool Path::PlayerDies(const Action& action, Result& result, Player& player)
 	{
-		player.setPosition(action.fromPos);
-		player.move(action.fromDir, m_slowFirst);
 		result.slow = m_slowFirst;
+		player.setPosition(action.fromPos);
+		player.move(action.fromDir, result.slow);
 		RegionCollideResult rcr = {};
 		if (!Scene::IsInPlayerRegion(player.pos)
 			|| (rcr = m_scenes[action.frame - 1].collideAll(player)).collided)
 		{
+			result.slow = !m_slowFirst;
 			player.setPosition(action.fromPos);
-			player.move(action.fromDir, m_slowFirst);
-			//result.slow = !m_slowFirst;
+			player.move(action.fromDir, result.slow);
+			
 			if (!Scene::IsInPlayerRegion(player.pos)
 				|| (rcr = m_scenes[action.frame - 1].collideAll(player)).collided)
 			{
 				return true;
 			}
+			printf("Saved by slowing down\n");
 		}
 		return false;
 	}
 
-	int_t Path::Score(Result& result, Player& player)
+	float_t Path::HorizonScore(Result& result, Player& player)
+	{
+		//Dying next to death when no bullets is pretty rare but well..
+		if (m_bulletTarget.has_value())
+		{
+			Vector2 nearest_bullet = m_bulletTarget.value().pos;
+			result.score += CalcFarScore(player.pos, nearest_bullet) * _F(100.0);
+		}
+		return result.score;
+	}
+	float_t Path::Score(Result& result, Player& player)
 	{
 		result.valid = true;
 
@@ -114,7 +129,7 @@ namespace th
 		{
 			//result.score += CalcShootScore(player.pos, m_enemyTarget.value().pos) * _F(100.0);
 			//result.score += CalcNearScore(player.pos, Vector2(m_enemyTarget.value().pos.x, RESET_POS.y)) * _F(100.0);
-			result.score += CalcRelaxedNearScore(player.pos, Vector2(m_enemyTarget.value().pos.x, RESET_POS.y), _F(16.0)) * _F(100.0);
+			result.score += CalcRelaxedNearScore(player.pos, Vector2(m_enemyTarget.value().pos.x, RESET_POS.y), _F(13.0)) * _F(100.0);
 		}
 		else
 		{
@@ -135,12 +150,12 @@ namespace th
 		Sinon: descendre en profondeur en testant chaque move et prendre le max de ceux calculés
 		
 		*/
-		Result result = {};
+		Result result = {.valid = true};
 		++m_count;
 		Player player = m_status.getPlayer();
 		if (PlayerDies(action, result, player))
 		{
-			result.score = -100;
+			result.score = HorizonScore(result, player)-200.0;
 			return result;
 		}
 		else if (m_count > FIND_LIMIT || action.frame > FIND_DEPTH)
@@ -152,7 +167,6 @@ namespace th
 		else
 		{
 			Result best_res = { .score = std::numeric_limits<int_t>::lowest()};
-			int_t nextValidCount = FIND_DIR_COUNTS[to_underlying(m_dir)];
 			for (int_t i = 0; i < FIND_DIR_COUNTS[to_underlying(m_dir)]; ++i)
 			{
 				DIR dir = FIND_DIRS[to_underlying(m_dir)][i];
@@ -164,16 +178,12 @@ namespace th
 
 				Result nextRes = minmax(nextAct);
 
-				if (!nextRes.valid)
-					nextValidCount -= 1;
-
 				if (best_res.score < nextRes.score)
 				{
 					best_res = nextRes;
 				}
 			}
-			if (nextValidCount != 0)
-				result.valid = true;
+			best_res.slow = result.slow;
 			return best_res;
 		}
 

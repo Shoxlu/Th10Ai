@@ -320,6 +320,7 @@ namespace th
 
 		std::optional<Item> itemTarget = findItem();
 		std::optional<Enemy> enemyTarget = findEnemy();
+		std::optional<Bullet> bulletTarget = findBullet();
 		bool underEnemy = m_status.isUnderEnemy();
 		bool slowFirst = (!itemTarget.has_value() && underEnemy);
 		//bool slowFirst = false;
@@ -330,7 +331,7 @@ namespace th
 
 		for (DIR dir : DIRS)
 		{
-			Path path(m_status, m_scenes, itemTarget, enemyTarget, underEnemy, !m_status.getItems().empty());
+			Path path(m_status, m_scenes, itemTarget, bulletTarget, enemyTarget, underEnemy, !m_status.getItems().empty());
 			Result result = path.findminmax(dir);
 
 			if (result.valid && path.m_bestScore > bestScore)
@@ -472,6 +473,31 @@ namespace th
 			{
 				minDist = dx;
 				target = enemy;
+			}
+		}
+
+		return target;
+	}
+	std::optional<Bullet> Th10Ai::findBullet()
+	{
+		const Player& player = m_status.getPlayer();
+		const std::vector<Bullet>& bullets = m_status.getBullets();
+		std::optional<Bullet> target;
+
+		if (bullets.empty())
+			return target;
+
+		float_t minDist = std::numeric_limits<float_t>::max();
+		for (const Bullet& bullet : bullets)
+		{
+			if (!Scene::IsInScene(bullet.pos))
+				continue;
+
+			float_t dx = std::abs(bullet.pos.x - player.pos.x);
+			if (dx < minDist)
+			{
+				minDist = dx;
+				target = bullet;
 			}
 		}
 

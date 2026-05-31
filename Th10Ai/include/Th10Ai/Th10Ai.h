@@ -45,6 +45,7 @@ namespace th
 
 		std::optional<Item> findItem();
 		std::optional<Enemy> findEnemy();
+		std::optional<Bullet> findBullet();
 
 		std::thread m_controlThread;
 		std::atomic<bool> m_controlDone;

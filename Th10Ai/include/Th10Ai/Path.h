@@ -28,17 +28,19 @@ namespace th
 	{
 	public:
 		static constexpr int_t FIND_LIMIT = 100000000;
-		static constexpr int_t FIND_DEPTH = 5;
+		static constexpr int_t FIND_DEPTH = 6;
 
 		Path(Status& status, Scene* scenes,
 			const std::optional<Item>& itemTarget,
+			const std::optional<Bullet>& bulletTarget,
 			const std::optional<Enemy>& enemyTarget,
 			bool underEnemy, bool anyItems);
 
 		Result find(DIR dir);
 		Result findminmax(DIR dir);
 		bool PlayerDies(const Action& action, Result& result, Player& player);
-		int_t Score(Result& result, Player& player);
+		float_t HorizonScore(Result& result, Player& player);
+		float_t Score(Result& result, Player& player);
 		Result minmax(const Action& action);
 		Result dfs(const Action& action);
 
@@ -56,6 +58,7 @@ namespace th
 		Scene* m_scenes;
 		const std::optional<Item>& m_itemTarget;
 		const std::optional<Enemy>& m_enemyTarget;
+		const std::optional<Bullet>& m_bulletTarget;
 		bool m_underEnemy;
 
 		DIR m_dir;
