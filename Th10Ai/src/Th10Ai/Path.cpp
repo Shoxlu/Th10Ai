@@ -52,6 +52,140 @@ namespace th
 	{
 	}
 
+	std::optional<Item> Path::findItem()
+	{
+		const Player& player = m_status.getPlayer();
+		const std::vector<Item>& items = m_status.getItems();
+		const std::vector<Enemy>& enemies = m_status.getEnemies();
+		std::optional<Item> target;
+
+		if (items.empty())
+			return target;
+
+		// 自机高于1/4屏
+		if (player.pos.y < Scene::SIZE.y / 4)
+		{
+			// 进入冷却
+			return target;
+		}
+
+		// 自机高于1/2屏，敌机多于5个
+		if ((player.pos.y < Scene::SIZE.y / 2) && (enemies.size() > 5))
+		{
+			// 进入冷却
+			return target;
+		}
+
+		float_t minDist = std::numeric_limits<float_t>::max();
+		//float_t maxY = std::numeric_limits<float_t>::lowest();
+		for (const Item& item : items)
+		{
+			// 道具在屏幕外
+			if (!Scene::IsInScene(item.pos))
+				continue;
+
+			// 道具高于1/5屏
+			if (item.pos.y < Scene::SIZE.y / 5)
+				continue;
+
+			// 道具不在自机1/4屏内
+			float_t dy = std::abs(item.pos.y - player.pos.y);
+			if (dy > Scene::SIZE.y / 4)
+				continue;
+
+			// 道具太靠近敌机
+			bool tooClose = false;
+			for (const Enemy& enemy : enemies)
+			{
+				if (item.distance(enemy) < 150)
+				{
+					tooClose = true;
+					break;
+				}
+			}
+			if (tooClose)
+				continue;
+
+			// 道具与自机距离最近
+			float_t dist = item.distance(player);
+			if (dist < minDist)
+			{
+				minDist = dist;
+				target = item;
+			}
+
+			//if (item.y > maxY)
+			//{
+			//	maxY = item.y;
+			//	target = item;
+			//}
+		}
+
+		return target;
+	}
+
+	// 查找敌机
+	std::optional<Enemy> Path::findEnemy()
+	{
+		const Player& player = m_status.getPlayer();
+		const std::vector<Enemy>& enemies = m_status.getEnemies();
+		std::optional<Enemy> target;
+
+		if (enemies.empty())
+			return target;
+
+		// 自机高于1/4屏
+		//if (player.pos.y < Scene::SIZE.y / 4)
+		//	return target;
+
+		float_t minDist = std::numeric_limits<float_t>::max();
+		for (const Enemy& enemy : enemies)
+		{
+			// 敌机在屏幕外
+			if (!Scene::IsInScene(enemy.pos))
+				continue;
+
+			// 敌机在自机下面
+			//if (enemy.pos.y > player.pos.y)
+			//	continue;
+
+			// 敌机与自机X轴距离最近
+			float_t dx = std::abs(enemy.pos.x - player.pos.x);
+			if (dx < minDist)
+			{
+				minDist = dx;
+				target = enemy;
+			}
+		}
+
+		return target;
+	}
+	std::optional<Bullet> Path::findBullet()
+	{
+		const Player& player = m_status.getPlayer();
+		const std::vector<Bullet>& bullets = m_status.getBullets();
+		std::optional<Bullet> target;
+
+		if (bullets.empty())
+			return target;
+
+		float_t minDist = std::numeric_limits<float_t>::max();
+		for (const Bullet& bullet : bullets)
+		{
+			if (!Scene::IsInScene(bullet.pos))
+				continue;
+
+			float_t dx = std::abs(bullet.pos.x - player.pos.x);
+			if (dx < minDist)
+			{
+				minDist = dx;
+				target = bullet;
+			}
+		}
+
+		return target;
+	}
+
 	Result Path::find(DIR dir)
 	{
 		m_dir = dir;
@@ -98,38 +232,47 @@ namespace th
 			{
 				return true;
 			}
-			printf("Saved by slowing down\n");
 		}
 		return false;
 	}
 
+	void Path::Update_status(Player& player, int_t i)
+	{
+
+	}
+
 	float_t Path::HorizonScore(Result& result, Player& player)
 	{
-		//Dying next to death when no bullets is pretty rare but well..
-		if (m_bulletTarget.has_value())
+		//Pretty rare to die without any bullet but well..
+
+		std::optional<Bullet> bulletTarget = m_bulletTarget;
+		if (bulletTarget.has_value())
 		{
-			Vector2 nearest_bullet = m_bulletTarget.value().pos;
+			Vector2 nearest_bullet = bulletTarget.value().pos;
 			result.score += CalcFarScore(player.pos, nearest_bullet) * _F(100.0);
 		}
 		return result.score;
 	}
+	
 	float_t Path::Score(Result& result, Player& player)
 	{
+		std::optional<Item> itemTarget = m_itemTarget;
+		std::optional<Enemy> enemyTarget = m_enemyTarget;
 		result.valid = true;
 
-		if (m_anyItems && !m_enemyTarget.has_value() && (!m_itemTarget.has_value() || (player.pos - m_itemTarget.value().pos).length() > player.pos.y - 120))
+		if (m_anyItems && !enemyTarget.has_value() && (!itemTarget.has_value() || (player.pos - itemTarget.value().pos).length() > player.pos.y - 120))
 		{
-			result.score += CalcNearScore(player.pos, Vector2(player.pos.x, 110)) * _F(100.0);
+			result.score += CalcNearScore(player.pos, Vector2(player.pos.x, 0)) * _F(100.0);
 		}
-		else if (m_itemTarget.has_value())
+		else if (itemTarget.has_value())
 		{
-			result.score += CalcNearScore(player.pos, m_itemTarget.value().pos) * _F(100.0);
+			result.score += CalcNearScore(player.pos, itemTarget.value().pos) * _F(100.0);
 		}
-		else if (m_enemyTarget.has_value())
+		else if (enemyTarget.has_value())
 		{
 			//result.score += CalcShootScore(player.pos, m_enemyTarget.value().pos) * _F(100.0);
 			//result.score += CalcNearScore(player.pos, Vector2(m_enemyTarget.value().pos.x, RESET_POS.y)) * _F(100.0);
-			result.score += CalcRelaxedNearScore(player.pos, Vector2(m_enemyTarget.value().pos.x, RESET_POS.y), _F(13.0)) * _F(100.0);
+			result.score += CalcRelaxedNearScore(player.pos, Vector2(enemyTarget.value().pos.x, RESET_POS.y), _F(0.0)) * _F(100.0);
 		}
 		else
 		{
@@ -155,7 +298,8 @@ namespace th
 		Player player = m_status.getPlayer();
 		if (PlayerDies(action, result, player))
 		{
-			result.score = HorizonScore(result, player)-200.0;
+			//Update_status(player, action.frame - 1);
+			result.score += HorizonScore(result, player)-100000.0;
 			return result;
 		}
 		else if (m_count > FIND_LIMIT || action.frame > FIND_DEPTH)

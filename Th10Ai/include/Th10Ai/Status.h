@@ -52,9 +52,9 @@ namespace th
 		int_t handleFrame;
 		int_t frame1;
 
+		Player m_player;
 	private:
 		GlobalVar m_globalVar;
-		Player m_player;
 		std::vector<Item> m_items;
 		std::vector<Enemy> m_enemies;
 		std::vector<Bullet> m_bullets;

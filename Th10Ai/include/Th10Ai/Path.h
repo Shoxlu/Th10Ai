@@ -27,7 +27,7 @@ namespace th
 	class Path
 	{
 	public:
-		static constexpr int_t FIND_LIMIT = 100000000;
+		static constexpr int_t FIND_LIMIT = 1000000000;
 		static constexpr int_t FIND_DEPTH = 6;
 
 		Path(Status& status, Scene* scenes,
@@ -39,10 +39,15 @@ namespace th
 		Result find(DIR dir);
 		Result findminmax(DIR dir);
 		bool PlayerDies(const Action& action, Result& result, Player& player);
+		void Update_status(Player& player, int_t i);
 		float_t HorizonScore(Result& result, Player& player);
 		float_t Score(Result& result, Player& player);
 		Result minmax(const Action& action);
 		Result dfs(const Action& action);
+
+		std::optional<Item> findItem();
+		std::optional<Enemy> findEnemy();
+		std::optional<Bullet> findBullet();
 
 	//private:
 		static float_t CalcFarScore(vec2 player, vec2 target);

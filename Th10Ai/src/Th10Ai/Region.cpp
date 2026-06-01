@@ -121,7 +121,7 @@ namespace th
 				if (enemy.collide(player))
 				{
 					result.collided = true;
-					break;
+					return result;
 				}
 			}
 
@@ -132,7 +132,7 @@ namespace th
 					if (bullet.collide(player))
 					{
 						result.collided = true;
-						break;
+						return result;
 					}
 				}
 			}
@@ -144,7 +144,7 @@ namespace th
 					if (laser.collide(player))
 					{
 						result.collided = true;
-						break;
+						return result;
 					}
 				}
 			}
@@ -154,7 +154,10 @@ namespace th
 		{
 			RegionCollideResult firstResult = m_first->collideAll(player);
 			if (firstResult.collided)
+			{
 				result.collided = true;
+				return result;
+			}
 		}
 
 		if (m_second != nullptr)
@@ -232,7 +235,10 @@ namespace th
 		{
 			RegionCollideResult firstResult = m_first->collideAll(player, target);
 			if (firstResult.collided)
+			{
 				result.collided = true;
+				return result;
+			}
 		}
 
 		if (m_second != nullptr)
