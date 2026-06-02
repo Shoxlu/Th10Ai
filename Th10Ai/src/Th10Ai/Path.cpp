@@ -260,7 +260,7 @@ namespace th
 		std::optional<Enemy> enemyTarget = m_enemyTarget;
 		result.valid = true;
 
-		if (m_anyItems && !enemyTarget.has_value() && (!itemTarget.has_value() || (player.pos - itemTarget.value().pos).length() > player.pos.y - 120))
+		if (m_anyItems && !enemyTarget.has_value() && (!itemTarget.has_value() ))
 		{
 			result.score += CalcNearScore(player.pos, Vector2(player.pos.x, 0)) * _F(100.0);
 		}
@@ -272,7 +272,8 @@ namespace th
 		{
 			//result.score += CalcShootScore(player.pos, m_enemyTarget.value().pos) * _F(100.0);
 			//result.score += CalcNearScore(player.pos, Vector2(m_enemyTarget.value().pos.x, RESET_POS.y)) * _F(100.0);
-			result.score += CalcRelaxedNearScore(player.pos, Vector2(enemyTarget.value().pos.x, RESET_POS.y), _F(0.0)) * _F(100.0);
+			result.score += CalcRelaxedNearScore(player.pos, Vector2(enemyTarget.value().pos.x, RESET_POS.y), _F(0.0)) * _F(50.0);
+			result.score += CalcRelaxedNearScore(player.pos, Vector2(enemyTarget.value().pos.x, player.pos.y), _F(0.0)) * _F(50.0);
 		}
 		else
 		{
